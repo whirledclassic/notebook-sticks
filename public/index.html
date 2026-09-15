@@ -11,11 +11,11 @@
     <div class="sheet">
       <p class="kicker">a shared sketchbook</p>
       <h1>Notebook Sticks</h1>
-      <p class="sub">Five pages. Coffee rings, comic panels, a manila pocket. Walk the stationery.</p>
+      <p class="sub">Walk. Talk. Earn ink. Buy a look at the shop page.</p>
       <canvas id="preview" width="180" height="160"></canvas>
       <label for="name">Name</label>
       <input id="name" type="text" maxlength="16" placeholder="Doodle" autofocus/>
-      <label>Ink</label>
+      <label>Ink color</label>
       <div class="row" id="colors"></div>
       <label>Hat</label>
       <div class="row" id="hats"></div>
@@ -24,29 +24,33 @@
   </div>
   <canvas id="game"></canvas>
   <div id="hud">
-    <div id="hint">Stationery is the map. Flip pages. Stand in a drawing.</div>
+    <div id="hint">Socialize nearby. Flip to Ink shop to spend. Click names to whisper.</div>
     <div id="who"></div>
+    <div id="ink">0 ink</div>
     <div id="here">Walk the page.</div>
     <div id="pages"></div>
     <canvas id="mini" width="160" height="104"></canvas>
     <div id="dest"></div>
     <div id="roster"></div>
     <div id="chatlog"></div>
+    <div id="shop"></div>
     <div class="bar">
       <button id="look-toggle" type="button">Look</button>
       <button id="pose-wave" type="button">Wave</button>
       <button id="pose-sit" type="button">Sit</button>
       <button id="pose-dance" type="button">Dance</button>
-      <input id="chat" maxlength="140" placeholder="say it · !page · /w Name · /mark"/>
+      <input id="chat" maxlength="140" placeholder="say hi · !page · /w Name · /mark"/>
     </div>
     <div id="look">
       <b>Change doodle</b>
       <div class="row" id="look-colors"></div>
       <div class="row" id="look-hats"></div>
+      <div class="row" id="look-extras"></div>
     </div>
   </div>
   <script src="/world.js"></script>
   <script src="/engine.js"></script>
+  <script src="/shop.js"></script>
   <script src="/game.js"></script>
 </body>
 </html>
