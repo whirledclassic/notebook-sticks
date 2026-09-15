@@ -1,9 +1,13 @@
 {
   "name": "notebook-sticks",
-  "version": "1.1.0",
-  "description": "Walk around a notebook as a stick figure and chat.",
+  "version": "1.2.0",
+  "private": true,
+  "description": "A playable notebook social MMO. Stick figures, pages, chat.",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check public/game.js"
+  },
   "engines": { "node": ">=18" },
   "dependencies": { "ws": "^8.18.0" }
 }
