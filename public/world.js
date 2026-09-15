@@ -17,6 +17,7 @@ function drawKind(g,pl){
   else if(k==="crumple"){g.beginPath();g.moveTo(x-40,y);g.lineTo(x-18,y-36);g.lineTo(x+22,y-28);g.lineTo(x+48,y+8);g.lineTo(x+10,y+36);g.lineTo(x-30,y+22);g.closePath();g.stroke();}
   else if(k==="grid"){for(let r=0;r<2;r++)for(let c=0;c<3;c++)g.strokeRect(x-90+c*62,y-50+r*52,54,44);}
   else if(k==="list"){for(let i=0;i<5;i++){g.beginPath();g.moveTo(x-50,y-30+i*16);g.lineTo(x+50,y-30+i*16);g.stroke();}}
+  else if(k==="hop"){for(let i=0;i<4;i++)g.strokeRect(x-40+i*22,y-10+(i%2)*18,20,18);}
   else if(k==="counter"){g.strokeRect(x-110,y-30,220,50);g.beginPath();g.moveTo(x-90,y-30);g.lineTo(x-90,y+40);g.moveTo(x+90,y-30);g.lineTo(x+90,y+40);g.stroke();g.fillText("INK",x,y-40);}
   else if(k==="scribble"){g.beginPath();g.moveTo(x-60,y);g.bezierCurveTo(x-20,y-50,x+20,y+50,x+60,y);g.bezierCurveTo(x+20,y-40,x-20,y+40,x-60,y);g.stroke();}
   else {g.beginPath();g.ellipse(x,y,pl.r*0.5,pl.r*0.28,-0.08,0,Math.PI*2);g.stroke();}
