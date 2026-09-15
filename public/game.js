@@ -2,7 +2,7 @@ const COLORS=["#1b1b1b","#c23b22","#2b6cb0","#2f855a","#6b46c1","#b7791f","#dd6b
 const HATS=["none","cap","bow","antenna","halo","horns","flower","crown"];
 const SPEED=220;
 const saved=JSON.parse(localStorage.getItem("ns-look")||"{}");
-const state={id:null,world:{w:3200,h:2100},range:420,pages:[],places:[],me:{name:saved.name||"Doodle",color:saved.color||"#1b1b1b",hat:saved.hat||"none",page:"cover",x:700,y:560,facing:1,walking:false,pose:"stand",chat:"",chatUntil:0},others:new Map(),marks:[],keys:{},cam:{x:0,y:0},lastSend:0,chatting:false,lookOpen:false,stick:{x:0,y:0,on:false},paper:null};
+const state={id:null,world:{w:3200,h:2100},range:420,pages:[],places:[],me:{name:saved.name||"Doodle",color:saved.color||"#1b1b1b",hat:saved.hat||"none",page:"cover",x:700,y:560,facing:1,walking:false,pose:"stand",chat:"",chatUntil:0},others:new Map(),marks:[],keys:{},cam:{x:0,y:0},lastSend:0,chatting:false,lookOpen:false,stick:{x:0,y:0,on:false},paper:null,goal:null};
 const canvas=document.getElementById("game"); const ctx=canvas.getContext("2d");
 const chatInput=document.getElementById("chat"); const chatLog=document.getElementById("chatlog");
 const who=document.getElementById("who"); const roster=document.getElementById("roster");
@@ -32,6 +32,7 @@ function connect(join){
     if(msg.type==="mark"){state.marks.push(msg.mark);logLine(msg.mark.name+" left a note.");}
   };
 }
+if(typeof bakePaper!=="function"){window.bakePaper=function(){const c=document.createElement("canvas");c.width=state.world.w;c.height=state.world.h;const g=c.getContext("2d");g.fillStyle="#f4eed8";g.fillRect(0,0,c.width,c.height);state.paper=c;}}
 function applyWorld(msg){if(msg.world)state.world=msg.world;if(msg.pages)state.pages=msg.pages;if(msg.range)state.range=msg.range;state.places=msg.places||[];state.marks=msg.marks||[];}
 function remote(p){return {...p,tx:p.x,ty:p.y};}
 function loadCrowd(list){state.others.clear();for(const p of list||[])if(p.id!==state.id)state.others.set(p.id,remote(p));}
@@ -40,7 +41,7 @@ function pageName(id){return (state.pages.find(p=>p.id===id)||{name:id}).name;}
 function everyone(){return [state.me,...state.others.values()];}
 function net(msg){if(socket&&socket.readyState===1)socket.send(JSON.stringify(msg));}
 function nearestPlace(){let best=null,bestD=1e9;for(const pl of state.places){const d=Math.hypot(pl.x-state.me.x,pl.y-state.me.y);if(d<pl.r&&d<bestD){best=pl;bestD=d;}}return best;}
-function refreshWho(){const spot=nearestPlace();who.textContent=pageName(state.me.page)+" · "+(1+state.others.size)+" here";if(hereEl)hereEl.textContent=spot?spot.name+" — "+spot.hint:"Walk the page.";const dest=document.getElementById("dest");if(dest)dest.innerHTML=state.places.map(pl=>`<div>${pl.name}</div>`).join("");if(roster)roster.innerHTML=everyone().map(p=>`<button data-id="${p.id}">${p.name}</button>`).join("");}
+function refreshWho(){const spot=nearestPlace();who.textContent=pageName(state.me.page)+" · "+(1+state.others.size)+" here";if(hereEl)hereEl.textContent=spot?spot.name+" — "+spot.hint:"Walk the page.";const dest=document.getElementById("dest");if(dest){dest.innerHTML=state.places.map(pl=>`<button data-place="${pl.id}" class="${spot&&spot.id===pl.id?"on":""}">${pl.name}</button>`).join("");}if(roster)roster.innerHTML=everyone().map(p=>`<button data-id="${p.id}">${p.name}</button>`).join("");}
 function drawPages(){const el=document.getElementById("pages");if(el)el.innerHTML=state.pages.map(p=>`<button class="${p.id===state.me.page?"on":""}" data-page="${p.id}">${p.name}</button>`).join("");}
 function sendChat(raw){const text=raw.trim();if(!text)return;if(text.startsWith("/mark "))net({type:"mark",text:text.slice(6)});else net({type:"chat",text});}
 addEventListener("keydown",e=>{
@@ -60,7 +61,17 @@ function setPose(pose){state.me.pose=pose;if(pose==="sit"||pose==="sleep")state.
 function inputVector(){if(state.chatting||state.lookOpen||document.activeElement===chatInput)return{x:0,y:0};let x=0,y=0;if(state.keys.a||state.keys.arrowleft)x-=1;if(state.keys.d||state.keys.arrowright)x+=1;if(state.keys.w||state.keys.arrowup)y-=1;if(state.keys.s||state.keys.arrowdown)y+=1;if(state.stick.on){x+=state.stick.x;y+=state.stick.y;}const m=Math.hypot(x,y);if(m>1){x/=m;y/=m;}return{x,y};}
 function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
 let last=performance.now();
-function tick(now){const dt=Math.min(.05,(now-last)/1000);last=now;const v=inputVector();if(v.x||v.y){if(state.me.pose==="sit"||state.me.pose==="sleep")state.me.pose="stand";state.me.walking=state.me.pose!=="dance";if(v.x)state.me.facing=v.x<0?-1:1;state.me.x=clamp(state.me.x+v.x*SPEED*dt,70,state.world.w-48);state.me.y=clamp(state.me.y+v.y*SPEED*dt,90,state.world.h-24);}else if(state.me.pose!=="dance")state.me.walking=false;for(const p of state.others.values()){p.x+=(p.tx-p.x)*Math.min(1,dt*12);p.y+=(p.ty-p.y)*Math.min(1,dt*12);}state.cam.x+=(clamp(state.me.x-innerWidth/2,0,Math.max(0,state.world.w-innerWidth))-state.cam.x)*Math.min(1,dt*8);state.cam.y+=(clamp(state.me.y-innerHeight/2,0,Math.max(0,state.world.h-innerHeight))-state.cam.y)*Math.min(1,dt*8);if(now-state.lastSend>40){state.lastSend=now;net({type:"move",x:state.me.x,y:state.me.y,facing:state.me.facing,walking:state.me.walking});}state.marks=state.marks.filter(m=>m.until>Date.now());if(now%12<2)refreshWho();draw(now);drawMini();requestAnimationFrame(tick);}
+function tick(now){const dt=Math.min(.05,(now-last)/1000);last=now;const v=inputVector();
+  if(v.x||v.y){state.goal=null;}
+  else if(state.goal){
+    const gx=state.goal.x-state.me.x, gy=state.goal.y-state.me.y, gm=Math.hypot(gx,gy);
+    if(gm<14){
+      state.me.x=state.goal.x; state.me.y=state.goal.y; state.me.walking=false;
+      if(state.goal.sit) setPose("sit");
+      state.goal=null;
+    } else { v.x=gx/gm; v.y=gy/gm; }
+  }
+  if(v.x||v.y){if(state.me.pose==="sit"||state.me.pose==="sleep")state.me.pose="stand";state.me.walking=state.me.pose!=="dance";if(v.x)state.me.facing=v.x<0?-1:1;state.me.x=clamp(state.me.x+v.x*SPEED*dt,70,state.world.w-48);state.me.y=clamp(state.me.y+v.y*SPEED*dt,90,state.world.h-24);}else if(state.me.pose!=="dance")state.me.walking=false;for(const p of state.others.values()){p.x+=(p.tx-p.x)*Math.min(1,dt*12);p.y+=(p.ty-p.y)*Math.min(1,dt*12);}state.cam.x+=(clamp(state.me.x-innerWidth/2,0,Math.max(0,state.world.w-innerWidth))-state.cam.x)*Math.min(1,dt*8);state.cam.y+=(clamp(state.me.y-innerHeight/2,0,Math.max(0,state.world.h-innerHeight))-state.cam.y)*Math.min(1,dt*8);if(now-state.lastSend>40){state.lastSend=now;net({type:"move",x:state.me.x,y:state.me.y,facing:state.me.facing,walking:state.me.walking});}state.marks=state.marks.filter(m=>m.until>Date.now());if(now%12<2)refreshWho();draw(now);drawMini();requestAnimationFrame(tick);}
 function draw(now){const scale=devicePixelRatio;ctx.setTransform(scale,0,0,scale,0,0);ctx.fillStyle="#f4eed8";ctx.fillRect(0,0,innerWidth,innerHeight);ctx.save();ctx.translate(-state.cam.x,-state.cam.y);if(state.paper)ctx.drawImage(state.paper,0,0);for(const m of state.marks){ctx.font="13px Comic Sans MS, cursive";ctx.fillStyle=m.color||"#1b1b1b";ctx.textAlign="center";ctx.fillText("✎ "+m.text,m.x,m.y);}ctx.strokeStyle="rgba(43,108,176,.16)";ctx.beginPath();ctx.arc(state.me.x,state.me.y,state.range,0,Math.PI*2);ctx.stroke();for(const p of everyone().sort((a,b)=>a.y-b.y))drawStick(ctx,p,now,1);ctx.restore();drawStickPad();}
 function drawStick(g,p,now,scale){
   const t=now/1000;
@@ -106,5 +117,16 @@ function syncLook(){persist();net({type:"look",name:state.me.name,color:state.me
 function toggleLook(){state.lookOpen=!state.lookOpen;document.getElementById("look").classList.toggle("show",state.lookOpen);}
 function closeLook(){state.lookOpen=false;document.getElementById("look").classList.remove("show");}
 function startGame(){persist();document.getElementById("boot").style.display="none";connect({name:state.me.name,color:state.me.color,hat:state.me.hat,page:"cover"});bindTouch();requestAnimationFrame(tick);}
-function bootUI(){document.getElementById("name").value=state.me.name==="Doodle"?"":state.me.name;fillChoices(document.getElementById("colors"),COLORS,state.me.color,c=>{state.me.color=c;},true);fillChoices(document.getElementById("hats"),HATS,state.me.hat,h=>{state.me.hat=h;},false);fillChoices(document.getElementById("look-colors"),COLORS,state.me.color,c=>{state.me.color=c;syncLook();},true);fillChoices(document.getElementById("look-hats"),HATS,state.me.hat,h=>{state.me.hat=h;syncLook();},false);paintPreview();setInterval(paintPreview,90);document.getElementById("go").onclick=()=>{state.me.name=(document.getElementById("name").value.trim()||"Doodle").slice(0,16);startGame();};document.getElementById("look-toggle").onclick=toggleLook;document.getElementById("pose-sit").onclick=()=>setPose(state.me.pose==="sit"?"stand":"sit");document.getElementById("pose-wave").onclick=()=>setPose(state.me.pose==="wave"?"stand":"wave");document.getElementById("pose-dance").onclick=()=>setPose(state.me.pose==="dance"?"stand":"dance");document.getElementById("pages").addEventListener("click",e=>{const page=e.target.dataset.page;if(page)net({type:"page",page});});if(roster)roster.addEventListener("click",e=>{const id=e.target.dataset.id;if(!id)return;const p=id===state.id?state.me:state.others.get(id);if(p){chatInput.value="/w "+p.name+" ";chatInput.focus();state.chatting=true;}});}
+function bootUI(){document.getElementById("name").value=state.me.name==="Doodle"?"":state.me.name;fillChoices(document.getElementById("colors"),COLORS,state.me.color,c=>{state.me.color=c;},true);fillChoices(document.getElementById("hats"),HATS,state.me.hat,h=>{state.me.hat=h;},false);fillChoices(document.getElementById("look-colors"),COLORS,state.me.color,c=>{state.me.color=c;syncLook();},true);fillChoices(document.getElementById("look-hats"),HATS,state.me.hat,h=>{state.me.hat=h;syncLook();},false);paintPreview();setInterval(paintPreview,90);document.getElementById("go").onclick=()=>{state.me.name=(document.getElementById("name").value.trim()||"Doodle").slice(0,16);startGame();};document.getElementById("look-toggle").onclick=toggleLook;document.getElementById("pose-sit").onclick=()=>setPose(state.me.pose==="sit"?"stand":"sit");document.getElementById("pose-wave").onclick=()=>setPose(state.me.pose==="wave"?"stand":"wave");document.getElementById("pose-dance").onclick=()=>setPose(state.me.pose==="dance"?"stand":"dance");const destBox=document.getElementById("dest");
+  if(destBox) destBox.addEventListener("click",e=>{
+    const id=e.target.dataset.place; if(!id)return;
+    const pl=state.places.find(p=>p.id===id); if(!pl)return;
+    state.goal={x:pl.x,y:pl.y+24,sit:pl.kind==="bench"};
+  });
+  canvas.addEventListener("click",e=>{
+    if(state.chatting||state.lookOpen)return;
+    const x=e.clientX+state.cam.x, y=e.clientY+state.cam.y;
+    state.goal={x:clamp(x,70,state.world.w-48),y:clamp(y,90,state.world.h-24),sit:false};
+  });
+  document.getElementById("pages").addEventListener("click",e=>{const page=e.target.dataset.page;if(page)net({type:"page",page});});if(roster)roster.addEventListener("click",e=>{const id=e.target.dataset.id;if(!id)return;const p=id===state.id?state.me:state.others.get(id);if(p){chatInput.value="/w "+p.name+" ";chatInput.focus();state.chatting=true;}});}
 bootUI();
