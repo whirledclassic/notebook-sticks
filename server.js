@@ -7,7 +7,7 @@ const { WebSocketServer } = require("ws");
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "0.0.0.0";
 const PUBLIC = path.join(__dirname, "public");
-const WORLD = { w: 3000, h: 2000 };
+const WORLD = { w: 3200, h: 2100 };
 const MAX_PLAYERS = 48;
 const MAX_CHAT = 140;
 const MAX_MARKS = 36;
@@ -17,41 +17,48 @@ const COLORS = new Set(["#1b1b1b","#c23b22","#2b6cb0","#2f855a","#6b46c1","#b779
 const POSES = new Set(["stand","sit","wave","dance","sleep"]);
 const PAGES = [
   { id: "cover", name: "Cover" },
-  { id: "graph", name: "Graph paper" },
-  { id: "margin", name: "Margin notes" },
+  { id: "graph", name: "Graph" },
+  { id: "comic", name: "Comic" },
+  { id: "pocket", name: "Pocket" },
   { id: "back", name: "Back page" }
 ];
 const PLACES = {
   cover: [
-    { id: "title", name: "Title block", x: 380, y: 280, r: 140, hint: "This is the front." },
-    { id: "coffee", name: "Coffee ring plaza", x: 720, y: 820, r: 160, hint: "Sit in the stain." },
-    { id: "quiet", name: "Quiet corner", x: 1220, y: 240, r: 150, hint: "Whisper distance." },
-    { id: "math", name: "Abandoned equation", x: 1980, y: 320, r: 150, hint: "Do not step on x." }
+    { id: "title", name: "Title block", kind: "sign", x: 420, y: 260, r: 150, hint: "The front of the book." },
+    { id: "lockers", name: "Locker row", kind: "lockers", x: 1680, y: 240, r: 160, hint: "Drawn metal. Empty." },
+    { id: "coffee", name: "Coffee ring plaza", kind: "ring", x: 780, y: 900, r: 180, hint: "The fountain is a stain." },
+    { id: "bench", name: "Quiet bench", kind: "bench", x: 2100, y: 720, r: 140, hint: "Sit with C." }
   ],
   graph: [
-    { id: "origin", name: "The origin", x: 520, y: 980, r: 140, hint: "(0, 0) more or less." },
-    { id: "triangles", name: "Triangle village", x: 1500, y: 420, r: 170, hint: "Geometry lives here." },
-    { id: "pi", name: "Pi fountain", x: 2100, y: 1100, r: 150, hint: "It never ends." }
+    { id: "origin", name: "The origin", kind: "origin", x: 560, y: 1050, r: 150, hint: "(0, 0) more or less." },
+    { id: "triangles", name: "Triangle village", kind: "triangles", x: 1680, y: 420, r: 180, hint: "Houses with three walls." },
+    { id: "pi", name: "Pi fountain", kind: "fountain", x: 2300, y: 1200, r: 160, hint: "It never ends." }
   ],
-  margin: [
-    { id: "sidenote", name: "Side notes cafe", x: 420, y: 320, r: 150, hint: "Teachers never look here." },
-    { id: "pencil", name: "Lost pencil", x: 1040, y: 1180, r: 140, hint: "Someone is still looking." },
-    { id: "tree", name: "Scribble tree", x: 1760, y: 560, r: 160, hint: "A tree made of loops." }
+  comic: [
+    { id: "panel1", name: "Panel one", kind: "panel", x: 520, y: 380, r: 170, hint: "Once upon a line." },
+    { id: "panel2", name: "Panel two", kind: "panel", x: 1600, y: 380, r: 170, hint: "Then somebody waved." },
+    { id: "panel3", name: "Panel three", kind: "panel", x: 2600, y: 380, r: 170, hint: "Cut to wide." },
+    { id: "splash", name: "Splash page", kind: "splash", x: 1500, y: 1300, r: 220, hint: "The big frame." }
+  ],
+  pocket: [
+    { id: "clips", name: "Paperclip park", kind: "clip", x: 520, y: 520, r: 160, hint: "Bent silver trees." },
+    { id: "stamp", name: "Stamp corner", kind: "stamp", x: 2200, y: 360, r: 150, hint: "Postage due." },
+    { id: "crumple", name: "Crumpled courtyard", kind: "crumple", x: 1200, y: 1280, r: 190, hint: "Someone gave up." }
   ],
   back: [
-    { id: "yearbook", name: "Yearbook wall", x: 480, y: 360, r: 150, hint: "Write a note." },
-    { id: "phones", name: "Phone numbers", x: 1680, y: 300, r: 140, hint: "All fake." },
-    { id: "exam", name: "Final exam panic", x: 900, y: 1120, r: 170, hint: "Breathe. Dance. Sleep." }
+    { id: "yearbook", name: "Yearbook wall", kind: "grid", x: 500, y: 360, r: 170, hint: "Leave a note." },
+    { id: "phones", name: "Phone numbers", kind: "list", x: 2100, y: 320, r: 150, hint: "All fake." },
+    { id: "exam", name: "Final exam panic", kind: "scribble", x: 1100, y: 1250, r: 190, hint: "Breathe. Dance. Sleep." }
   ]
 };
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8" };
 const players = new Map();
-const marks = { cover: [], graph: [], margin: [], back: [] };
+const marks = { cover: [], graph: [], comic: [], pocket: [], back: [] };
 let nextId = 1;
 function sanitizeName(name) { return String(name || "").replace(/[^\w \-.'!]/g, "").trim().slice(0, 16) || "Doodle"; }
 function pick(set, value, fallback) { return set.has(value) ? value : fallback; }
 function pageOk(id) { return PAGES.some((p) => p.id === id) ? id : "cover"; }
-function spawn() { return { x: 560 + Math.random() * 640, y: 500 + Math.random() * 320 }; }
+function spawn() { return { x: 640 + Math.random() * 520, y: 560 + Math.random() * 280 }; }
 function view(p) {
   return { id: p.id, name: p.name, color: p.color, hat: p.hat, page: p.page, x: p.x, y: p.y, facing: p.facing, walking: p.walking, pose: p.pose, chat: p.chat, chatUntil: p.chatUntil };
 }
