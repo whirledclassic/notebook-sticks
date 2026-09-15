@@ -1,6 +1,6 @@
 # Notebook Sticks
 
-A tiny social MMO on lined paper. Stick figures walk pages, talk to whoever is close, whisper, dance, and leave notes.
+A tiny social MMO inside a notebook. Anyone who opens the server is in the book.
 
 ## Play
 
@@ -9,18 +9,17 @@ npm install
 npm start
 ```
 
-Open http://localhost:3000
+Open http://localhost:3000 — two tabs, two phones, or send the URL to a friend on the same host.
 
-| Input | What |
-| --- | --- |
-| WASD | Walk |
-| Touch left | Stick |
-| Enter | Chat (nearby only) |
-| `!hello` | Shout the whole page |
-| `/w Name hi` | Whisper |
-| `/mark text` or M | Pin a note where you stand |
-| E / C / X / Z | Wave / sit / dance / sleep |
-| L | Change look |
-| Click a name | Start a whisper |
+## The book
 
-Look is saved in the browser. Notes last eight minutes. Three pages: Cover, Margin notes, Back page.
+| Page | Paper | Places |
+| --- | --- | --- |
+| Cover | Lined, red margin, spiral holes | Title block, coffee ring plaza, quiet corner, abandoned equation |
+| Graph paper | Grid + axes | The origin, triangle village, pi fountain |
+| Margin notes | Loose lines | Side notes cafe, lost pencil, scribble tree |
+| Back page | Warm paper, torn edge | Yearbook wall, phone numbers, final exam panic |
+
+Walk into a scribble. The HUD names it. Notes and chat stay on that page.
+
+Stick figures breathe when idle, blink, and use a contact/pass walk. Title-page preview walks so you can see the cycle before you join.

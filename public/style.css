@@ -17,14 +17,15 @@ input[type=text], #chat { width:100%; font:inherit; font-size:17px; padding:8px 
 .play { margin-top:14px; width:100%; font-size:22px; padding:10px; background:#ffd56a; box-shadow:4px 4px 0 #1b1b1b; }
 canvas#game { display:block; width:100vw; height:100vh; background:#f4eed8; }
 #hud { pointer-events:none; }
-#hint, #who, #chatlog, #look, .bar, #pages, #roster, #mini { pointer-events:auto; }
-#hint, #who { position:absolute; left:16px; background:rgba(244,238,216,.9); border:2px solid #1b1b1b; padding:6px 10px; }
+#hint, #who, #here, #chatlog, #look, .bar, #pages, #roster, #mini { pointer-events:auto; }
+#hint, #who, #here { position:absolute; left:16px; background:rgba(244,238,216,.9); border:2px solid #1b1b1b; padding:6px 10px; }
 #hint { top:12px; max-width:52vw; }
 #who { top:52px; font-size:14px; }
-#pages { position:absolute; left:16px; top:88px; display:flex; gap:6px; flex-wrap:wrap; }
+#here { top:86px; font-size:14px; max-width:46vw; }
+#pages { position:absolute; left:16px; top:126px; display:flex; gap:6px; flex-wrap:wrap; }
 #pages button { padding:4px 8px; background:#fffdf6; }
-#mini { position:absolute; left:16px; top:128px; border:2px solid #1b1b1b; background:#f4eed8; }
-#roster { position:absolute; left:16px; top:244px; width:160px; max-height:28vh; overflow:auto; background:rgba(244,238,216,.9); border:2px solid #1b1b1b; padding:6px; }
+#mini { position:absolute; left:16px; top:168px; border:2px solid #1b1b1b; background:#f4eed8; }
+#roster { position:absolute; left:16px; top:284px; width:160px; max-height:26vh; overflow:auto; background:rgba(244,238,216,.9); border:2px solid #1b1b1b; padding:6px; }
 #roster button { display:block; width:100%; text-align:left; margin:3px 0; padding:3px 6px; }
 #chatlog { position:absolute; right:16px; top:16px; width:min(280px,42vw); max-height:38vh; overflow:auto; background:rgba(244,238,216,.9); border:2px solid #1b1b1b; padding:8px 10px; font-size:14px; }
 .bar { position:absolute; left:16px; right:16px; bottom:16px; display:flex; gap:8px; align-items:center; }
