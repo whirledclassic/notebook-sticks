@@ -5,7 +5,8 @@ body { font-family:"Comic Sans MS","Segoe Print","Chalkboard SE",cursive,sans-se
 #boot, #hud { position:fixed; inset:0; }
 #boot { display:flex; align-items:center; justify-content:center; z-index:5; background: repeating-linear-gradient(#f4eed8,#f4eed8 31px,#c7d8ea 32px); }
 .sheet { width:min(520px,92vw); background:rgba(244,238,216,.94); border:2px solid #1b1b1b; box-shadow:8px 10px 0 #1b1b1b; padding:20px 22px 24px; }
-h1 { margin:0 0 4px; font-size:34px; transform:rotate(-1.1deg); }
+.kicker { margin:0; letter-spacing:.12em; text-transform:uppercase; font-size:12px; }
+h1 { margin:2px 0 4px; font-size:34px; transform:rotate(-1.1deg); }
 .sub { margin:0 0 10px; color:#444; }
 #preview { display:block; margin:0 auto 8px; border:2px solid #1b1b1b; background:#f4eed8; }
 label { display:block; margin:8px 0 4px; }
@@ -17,7 +18,7 @@ input[type=text], #chat { width:100%; font:inherit; font-size:17px; padding:8px 
 .play { margin-top:14px; width:100%; font-size:22px; padding:10px; background:#ffd56a; box-shadow:4px 4px 0 #1b1b1b; }
 canvas#game { display:block; width:100vw; height:100vh; background:#f4eed8; }
 #hud { pointer-events:none; }
-#hint, #who, #here, #chatlog, #look, .bar, #pages, #roster, #mini { pointer-events:auto; }
+#hint, #who, #here, #chatlog, #look, .bar, #pages, #roster, #mini, #dest { pointer-events:auto; }
 #hint, #who, #here { position:absolute; left:16px; background:rgba(244,238,216,.9); border:2px solid #1b1b1b; padding:6px 10px; }
 #hint { top:12px; max-width:52vw; }
 #who { top:52px; font-size:14px; }
@@ -25,7 +26,8 @@ canvas#game { display:block; width:100vw; height:100vh; background:#f4eed8; }
 #pages { position:absolute; left:16px; top:126px; display:flex; gap:6px; flex-wrap:wrap; }
 #pages button { padding:4px 8px; background:#fffdf6; }
 #mini { position:absolute; left:16px; top:168px; border:2px solid #1b1b1b; background:#f4eed8; }
-#roster { position:absolute; left:16px; top:284px; width:160px; max-height:26vh; overflow:auto; background:rgba(244,238,216,.9); border:2px solid #1b1b1b; padding:6px; }
+#dest { position:absolute; left:16px; top:284px; width:160px; background:rgba(244,238,216,.9); border:2px solid #1b1b1b; padding:6px 8px; font-size:13px; }
+#roster { position:absolute; left:16px; top:430px; width:160px; max-height:22vh; overflow:auto; background:rgba(244,238,216,.9); border:2px solid #1b1b1b; padding:6px; }
 #roster button { display:block; width:100%; text-align:left; margin:3px 0; padding:3px 6px; }
 #chatlog { position:absolute; right:16px; top:16px; width:min(280px,42vw); max-height:38vh; overflow:auto; background:rgba(244,238,216,.9); border:2px solid #1b1b1b; padding:8px 10px; font-size:14px; }
 .bar { position:absolute; left:16px; right:16px; bottom:16px; display:flex; gap:8px; align-items:center; }
@@ -33,4 +35,4 @@ canvas#game { display:block; width:100vw; height:100vh; background:#f4eed8; }
 #chat { min-width:0; flex:1; }
 #look { display:none; position:absolute; left:16px; bottom:70px; background:rgba(244,238,216,.95); border:2px solid #1b1b1b; padding:10px 12px; }
 #look.show { display:block; }
-@media (max-width:800px){ #mini,#roster{display:none;} #hint{font-size:12px;} }
+@media (max-width:800px){ #mini,#roster,#dest{display:none;} #hint{font-size:12px;} }
