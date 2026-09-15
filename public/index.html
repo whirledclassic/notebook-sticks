@@ -9,8 +9,9 @@
 <body>
   <div id="boot">
     <div class="sheet">
+      <p class="kicker">a shared sketchbook</p>
       <h1>Notebook Sticks</h1>
-      <p class="sub">The world is a notebook. Walk the pages. Anyone on this server is in the book.</p>
+      <p class="sub">Five pages. Coffee rings, comic panels, a manila pocket. Walk the stationery.</p>
       <canvas id="preview" width="180" height="160"></canvas>
       <label for="name">Name</label>
       <input id="name" type="text" maxlength="16" placeholder="Doodle" autofocus/>
@@ -23,11 +24,12 @@
   </div>
   <canvas id="game"></canvas>
   <div id="hud">
-    <div id="hint">Walk to named scribbles. Chat is nearby. Flip pages to visit more paper.</div>
+    <div id="hint">Stationery is the map. Flip pages. Stand in a drawing.</div>
     <div id="who"></div>
     <div id="here">Walk the page.</div>
     <div id="pages"></div>
     <canvas id="mini" width="160" height="104"></canvas>
+    <div id="dest"></div>
     <div id="roster"></div>
     <div id="chatlog"></div>
     <div class="bar">
@@ -43,6 +45,7 @@
       <div class="row" id="look-hats"></div>
     </div>
   </div>
+  <script src="/world.js"></script>
   <script src="/game.js"></script>
 </body>
 </html>
