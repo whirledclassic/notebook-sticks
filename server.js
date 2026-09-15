@@ -4,6 +4,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { WebSocketServer } = require("ws");
+const eco = require("./economy");
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "0.0.0.0";
 const PUBLIC = path.join(__dirname, "public");
@@ -12,15 +13,17 @@ const MAX_PLAYERS = 48;
 const MAX_CHAT = 140;
 const MAX_MARKS = 36;
 const RANGE = 420;
-const HATS = new Set(["none","cap","bow","antenna","halo","horns","flower","crown"]);
-const COLORS = new Set(["#1b1b1b","#c23b22","#2b6cb0","#2f855a","#6b46c1","#b7791f","#dd6b20","#0f766e"]);
+const HATS = new Set(["none","cap","bow","antenna","halo","horns","flower","crown","fez","top"]);
+const COLORS = new Set(["#1b1b1b","#c23b22","#2b6cb0","#2f855a","#6b46c1","#b7791f","#dd6b20","#0f766e","#e11d48"]);
 const POSES = new Set(["stand","sit","wave","dance","sleep"]);
+const EXTRAS = new Set(["none","glasses","scarf","pack"]);
 const PAGES = [
   { id: "cover", name: "Cover" },
   { id: "graph", name: "Graph" },
   { id: "comic", name: "Comic" },
   { id: "pocket", name: "Pocket" },
-  { id: "back", name: "Back page" }
+  { id: "back", name: "Back page" },
+  { id: "shop", name: "Ink shop" }
 ];
 const PLACES = {
   cover: [
@@ -45,6 +48,10 @@ const PLACES = {
     { id: "stamp", name: "Stamp corner", kind: "stamp", x: 2200, y: 360, r: 150, hint: "Postage due." },
     { id: "crumple", name: "Crumpled courtyard", kind: "crumple", x: 1200, y: 1280, r: 190, hint: "Someone gave up." }
   ],
+  shop: [
+    { id: "counter", name: "Shop counter", kind: "counter", x: 900, y: 520, r: 200, hint: "Buy with ink." },
+    { id: "fitting", name: "Fitting box", kind: "sign", x: 1900, y: 900, r: 160, hint: "Try it on." }
+  ],
   back: [
     { id: "yearbook", name: "Yearbook wall", kind: "grid", x: 500, y: 360, r: 170, hint: "Leave a note." },
     { id: "phones", name: "Phone numbers", kind: "list", x: 2100, y: 320, r: 150, hint: "All fake." },
@@ -53,14 +60,14 @@ const PLACES = {
 };
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8" };
 const players = new Map();
-const marks = { cover: [], graph: [], comic: [], pocket: [], back: [] };
+const marks = { cover: [], graph: [], comic: [], pocket: [], back: [], shop: [] };
 let nextId = 1;
 function sanitizeName(name) { return String(name || "").replace(/[^\w \-.'!]/g, "").trim().slice(0, 16) || "Doodle"; }
 function pick(set, value, fallback) { return set.has(value) ? value : fallback; }
 function pageOk(id) { return PAGES.some((p) => p.id === id) ? id : "cover"; }
 function spawn() { return { x: 640 + Math.random() * 520, y: 560 + Math.random() * 280 }; }
 function view(p) {
-  return { id: p.id, name: p.name, color: p.color, hat: p.hat, page: p.page, x: p.x, y: p.y, facing: p.facing, walking: p.walking, pose: p.pose, chat: p.chat, chatUntil: p.chatUntil };
+  return { id: p.id, name: p.name, color: p.color, hat: p.hat, extra: p.extra || "none", page: p.page, x: p.x, y: p.y, facing: p.facing, walking: p.walking, pose: p.pose, chat: p.chat, chatUntil: p.chatUntil };
 }
 function send(ws, msg) { if (ws.readyState === 1) ws.send(JSON.stringify(msg)); }
 function onPage(page) { return [...players.values()].filter((p) => p.page === page); }
@@ -97,7 +104,7 @@ wss.on("connection", (ws) => {
   if (players.size >= MAX_PLAYERS) { send(ws, { type: "full" }); ws.close(); return; }
   const id = String(nextId++);
   const pos = spawn();
-  const player = { id, ws, name: "Doodle", color: "#1b1b1b", hat: "none", page: "cover", x: pos.x, y: pos.y, facing: 1, walking: false, pose: "stand", chat: "", chatUntil: 0, lastChat: 0, lastMark: 0, lastMove: 0, joined: false };
+  const player = { id, ws, name: "Doodle", color: "#1b1b1b", hat: "none", extra: "none", page: "cover", x: pos.x, y: pos.y, facing: 1, walking: false, pose: "stand", chat: "", chatUntil: 0, lastChat: 0, lastMark: 0, lastMove: 0, joined: false };
   ws.on("message", (buf) => {
     let msg; try { msg = JSON.parse(String(buf)); } catch { return; }
     if (!msg || typeof msg !== "object") return;
@@ -109,7 +116,7 @@ wss.on("connection", (ws) => {
       player.page = pageOk(msg.page);
       players.set(id, player);
       pruneMarks(player.page);
-      send(ws, { type: "welcome", id, you: view(player), ...snapshot(player.page) });
+      send(ws, { type: "welcome", id, you: view(player), catalog: eco.CATALOG, wallet: eco.publicWallet(player.name), ...snapshot(player.page) });
       toPage(player.page, { type: "join", player: view(player) }, player);
       return;
     }
@@ -124,11 +131,7 @@ wss.on("connection", (ws) => {
       let nx = Math.max(70, Math.min(WORLD.w - 48, x));
       let ny = Math.max(90, Math.min(WORLD.h - 24, y));
       const step = Math.hypot(nx - player.x, ny - player.y);
-      if (step > maxStep) {
-        const k = maxStep / step;
-        nx = player.x + (nx - player.x) * k;
-        ny = player.y + (ny - player.y) * k;
-      }
+      if (step > maxStep) { const k = maxStep / step; nx = player.x + (nx - player.x) * k; ny = player.y + (ny - player.y) * k; }
       player.x = nx; player.y = ny;
       player.facing = msg.facing === -1 ? -1 : 1;
       player.walking = Boolean(msg.walking);
@@ -148,10 +151,19 @@ wss.on("connection", (ws) => {
       return;
     }
     if (msg.type === "look") {
-      player.color = pick(COLORS, msg.color, player.color);
-      player.hat = pick(HATS, msg.hat, player.hat);
-      if (msg.name) player.name = sanitizeName(msg.name);
+      const w = eco.wallet(player.name);
+      if (HATS.has(msg.hat) && w.hats.includes(msg.hat)) player.hat = msg.hat;
+      if (COLORS.has(msg.color) && w.colors.includes(msg.color)) player.color = msg.color;
+      if (EXTRAS.has(msg.extra) && w.extras.includes(msg.extra)) player.extra = msg.extra;
+      w.extra = player.extra;
       toPage(player.page, { type: "look", player: view(player) });
+      send(ws, { type: "wallet", wallet: eco.publicWallet(player.name) });
+      return;
+    }
+    if (msg.type === "buy") {
+      const result = eco.buy(player.name, msg.kind, msg.id);
+      send(ws, { type: "buy", ...result });
+      if (result.ok) send(ws, { type: "wallet", wallet: result.wallet });
       return;
     }
     if (msg.type === "pose") {
@@ -189,6 +201,7 @@ wss.on("connection", (ws) => {
       if (shout) text = text.slice(1).trim();
       if (!text) return;
       player.chat = text; player.chatUntil = now + 5200;
+      send(ws, { type: "wallet", wallet: eco.chatPay(player.name) });
       const packet = { type: "chat", id, name: player.name, text, until: player.chatUntil, shout };
       if (shout) toPage(player.page, packet);
       else {
@@ -209,4 +222,10 @@ setInterval(() => {
     toPage(page.id, { type: "snap", t: tnow, players: list.map((p) => ({ id: p.id, x: Math.round(p.x), y: Math.round(p.y), facing: p.facing, walking: p.walking, pose: p.pose })) });
   }
 }, 50);
+setInterval(() => {
+  for (const p of players.values()) {
+    if (!p.joined) continue;
+    send(p.ws, { type: "wallet", wallet: eco.drip(p.name) });
+  }
+}, 60000);
 server.listen(PORT, HOST, () => console.log("Notebook Sticks http://" + HOST + ":" + PORT + "  (health /health)"));
