@@ -12,6 +12,7 @@ const CATALOG = [
   { kind: "hat", id: "crown", name: "Crown", cost: 80 },
   { kind: "hat", id: "fez", name: "Fez", cost: 45 },
   { kind: "hat", id: "top", name: "Top hat", cost: 60 },
+  { kind: "hat", id: "party", name: "Party hat", cost: 28 },
   { kind: "color", id: "#6b46c1", name: "Violet ink", cost: 20 },
   { kind: "color", id: "#b7791f", name: "Gold ink", cost: 20 },
   { kind: "color", id: "#dd6b20", name: "Orange ink", cost: 20 },
@@ -19,17 +20,12 @@ const CATALOG = [
   { kind: "color", id: "#e11d48", name: "Rose ink", cost: 50 },
   { kind: "extra", id: "glasses", name: "Glasses", cost: 30 },
   { kind: "extra", id: "scarf", name: "Scarf", cost: 35 },
-  { kind: "extra", id: "pack", name: "Backpack", cost: 50 }
+  { kind: "extra", id: "pack", name: "Backpack", cost: 50 },
+  { kind: "extra", id: "cape", name: "Cape", cost: 55 },
+  { kind: "extra", id: "bowtie", name: "Bow tie", cost: 22 }
 ];
 function emptyWallet() {
-  return {
-    ink: 40,
-    hats: FREE_HATS.slice(),
-    colors: FREE_COLORS.slice(),
-    extras: FREE_EXTRAS.slice(),
-    extra: "none",
-    lastDrip: 0
-  };
+  return { ink: 40, hats: FREE_HATS.slice(), colors: FREE_COLORS.slice(), extras: FREE_EXTRAS.slice(), extra: "none", lastDrip: 0, stamps: [] };
 }
 function loadAll() {
   try { return JSON.parse(fs.readFileSync(FILE, "utf8")); } catch { return {}; }
@@ -48,11 +44,12 @@ function wallet(name) {
   w.colors = [...new Set([].concat(FREE_COLORS, w.colors || []))];
   w.extras = [...new Set([].concat(FREE_EXTRAS, w.extras || []))];
   if (w.ink == null) w.ink = 40;
+  if (!w.stamps) w.stamps = [];
   return w;
 }
 function publicWallet(name) {
   const w = wallet(name);
-  return { ink: w.ink, hats: w.hats, colors: w.colors, extras: w.extras, extra: w.extra || "none" };
+  return { ink: w.ink, hats: w.hats, colors: w.colors, extras: w.extras, extra: w.extra || "none", stamps: w.stamps };
 }
 function drip(name) {
   const w = wallet(name);
@@ -66,6 +63,14 @@ function drip(name) {
 function chatPay(name) {
   const w = wallet(name);
   w.ink += 1;
+  saveAll(db);
+  return publicWallet(name);
+}
+function visit(name, stampId) {
+  const w = wallet(name);
+  if (w.stamps.includes(stampId)) return null;
+  w.stamps.push(stampId);
+  w.ink += 3;
   saveAll(db);
   return publicWallet(name);
 }
@@ -88,4 +93,4 @@ function buy(name, kind, id) {
   saveAll(db);
   return { ok: true, item, wallet: publicWallet(name) };
 }
-module.exports = { CATALOG, FREE_HATS, FREE_COLORS, FREE_EXTRAS, wallet, publicWallet, drip, chatPay, buy, owns };
+module.exports = { CATALOG, FREE_HATS, FREE_COLORS, FREE_EXTRAS, wallet, publicWallet, drip, chatPay, buy, owns, visit };
