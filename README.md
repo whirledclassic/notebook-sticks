@@ -1,6 +1,6 @@
 # Notebook Sticks
 
-A shared sheet of paper. Everyone is a stick figure. You walk around, sit, wave, change your doodle, and talk.
+A tiny social MMO on lined paper. Stick figures walk pages, talk to whoever is close, whisper, dance, and leave notes.
 
 ## Play
 
@@ -9,17 +9,18 @@ npm install
 npm start
 ```
 
-Open http://localhost:3000 in two tabs or two phones on the same Wi-Fi.
+Open http://localhost:3000
 
 | Input | What |
 | --- | --- |
-| WASD / arrows | Walk |
-| Touch left side | Virtual stick |
-| Enter | Chat |
-| E | Wave |
-| C | Sit |
-| L | Change ink / hat |
+| WASD | Walk |
+| Touch left | Stick |
+| Enter | Chat (nearby only) |
+| `!hello` | Shout the whole page |
+| `/w Name hi` | Whisper |
+| `/mark text` or M | Pin a note where you stand |
+| E / C / X / Z | Wave / sit / dance / sleep |
+| L | Change look |
+| Click a name | Start a whisper |
 
-Vanilla canvas + one Node WebSocket server. Other players are interpolated. The notebook is cached on an offscreen canvas.
-
-Hats: none, cap, bow, antenna, halo, horns, flower, crown. Cap 40 people.
+Look is saved in the browser. Notes last eight minutes. Three pages: Cover, Margin notes, Back page.
