@@ -16,7 +16,8 @@ function renderShop() {
   box.classList.toggle("show", atShop);
   if (!atShop) return;
   const items = state.catalog || [];
-  box.innerHTML = "<b>Ink shop</b><div class='sub'>Talk nearby. Spend ink on looks.</div>" + items.map((it) => {
+  const stamps = (state.wallet && state.wallet.stamps) ? state.wallet.stamps.length : 0;
+  box.innerHTML = "<b>Ink shop</b><div class='sub'>"+stamps+" stamps collected. Talk. Spend.</div>" + items.map((it) => {
     const have = owned(it.kind, it.id);
     return `<button data-kind="${it.kind}" data-id="${it.id}" ${have ? "disabled" : ""}>${it.name} · ${have ? "yours" : it.cost + " ink"}</button>`;
   }).join("");
@@ -49,5 +50,10 @@ function extraPath(g, extra, sit) {
     g.stroke();
   } else if (extra === "pack") {
     g.strokeRect(-7, -28 + sit, 8, 14);
+  } else if (extra === "cape") {
+    g.moveTo(0, -40 + sit); g.lineTo(-16, -8 + sit); g.lineTo(0, -16 + sit);
+    g.stroke();
+  } else if (extra === "bowtie") {
+    g.moveTo(-8, -40 + sit); g.lineTo(0, -36 + sit); g.lineTo(8, -40 + sit); g.lineTo(0, -32 + sit); g.closePath(); g.stroke();
   }
 }
