@@ -13,10 +13,10 @@ const MAX_PLAYERS = 48;
 const MAX_CHAT = 140;
 const MAX_MARKS = 36;
 const RANGE = 420;
-const HATS = new Set(["none","cap","bow","antenna","halo","horns","flower","crown","fez","top"]);
+const HATS = new Set(["none","cap","bow","antenna","halo","horns","flower","crown","fez","top","party"]);
 const COLORS = new Set(["#1b1b1b","#c23b22","#2b6cb0","#2f855a","#6b46c1","#b7791f","#dd6b20","#0f766e","#e11d48"]);
 const POSES = new Set(["stand","sit","wave","dance","sleep"]);
-const EXTRAS = new Set(["none","glasses","scarf","pack"]);
+const EXTRAS = new Set(["none","glasses","scarf","pack","cape","bowtie"]);
 const PAGES = [
   { id: "cover", name: "Cover" },
   { id: "graph", name: "Graph" },
@@ -30,7 +30,8 @@ const PLACES = {
     { id: "title", name: "Title block", kind: "sign", x: 420, y: 260, r: 150, hint: "The front of the book." },
     { id: "lockers", name: "Locker row", kind: "lockers", x: 1680, y: 240, r: 160, hint: "Drawn metal. Empty." },
     { id: "coffee", name: "Coffee ring plaza", kind: "ring", x: 780, y: 900, r: 180, hint: "The fountain is a stain." },
-    { id: "bench", name: "Quiet bench", kind: "bench", x: 2100, y: 720, r: 140, hint: "Sit with C." }
+    { id: "bench", name: "Quiet bench", kind: "bench", x: 2100, y: 720, r: 140, hint: "Sit with C." },
+    { id: "hop", name: "Hopscotch", kind: "hop", x: 1280, y: 1280, r: 160, hint: "F throws a plane. Hop." }
   ],
   graph: [
     { id: "origin", name: "The origin", kind: "origin", x: 560, y: 1050, r: 150, hint: "(0, 0) more or less." },
@@ -104,7 +105,7 @@ wss.on("connection", (ws) => {
   if (players.size >= MAX_PLAYERS) { send(ws, { type: "full" }); ws.close(); return; }
   const id = String(nextId++);
   const pos = spawn();
-  const player = { id, ws, name: "Doodle", color: "#1b1b1b", hat: "none", extra: "none", page: "cover", x: pos.x, y: pos.y, facing: 1, walking: false, pose: "stand", chat: "", chatUntil: 0, lastChat: 0, lastMark: 0, lastMove: 0, joined: false };
+  const player = { id, ws, name: "Doodle", color: "#1b1b1b", hat: "none", extra: "none", page: "cover", x: pos.x, y: pos.y, facing: 1, walking: false, pose: "stand", chat: "", chatUntil: 0, lastChat: 0, lastMark: 0, lastMove: 0, lastPlane: 0, joined: false };
   ws.on("message", (buf) => {
     let msg; try { msg = JSON.parse(String(buf)); } catch { return; }
     if (!msg || typeof msg !== "object") return;
@@ -136,6 +137,18 @@ wss.on("connection", (ws) => {
       player.facing = msg.facing === -1 ? -1 : 1;
       player.walking = Boolean(msg.walking);
       if (player.walking && player.pose !== "dance") player.pose = "stand";
+      const here = (PLACES[player.page] || []).find((pl) => Math.hypot(pl.x - player.x, pl.y - player.y) < pl.r);
+      if (here) {
+        const stamped = eco.visit(player.name, player.page + ":" + here.id);
+        if (stamped) send(ws, { type: "stamp", place: here.name, wallet: stamped });
+      }
+      return;
+    }
+    if (msg.type === "plane") {
+      const now = Date.now();
+      if (now - (player.lastPlane || 0) < 900) return;
+      player.lastPlane = now;
+      toPage(player.page, { type: "plane", name: player.name, x: player.x, y: player.y - 20, facing: player.facing });
       return;
     }
     if (msg.type === "page") {
@@ -228,4 +241,10 @@ setInterval(() => {
     send(p.ws, { type: "wallet", wallet: eco.drip(p.name) });
   }
 }, 60000);
+const LINES = ["A pencil rolled under the binding.","The margin yawned.","Someone erased a secret.","The coffee ring grew.","A paper airplane missed the trash."];
+setInterval(() => {
+  if (!players.size) return;
+  const text = LINES[Math.floor(Math.random() * LINES.length)];
+  for (const page of PAGES) if (onPage(page.id).length) toPage(page.id, { type: "event", text });
+}, 45000);
 server.listen(PORT, HOST, () => console.log("Notebook Sticks http://" + HOST + ":" + PORT + "  (health /health)"));
