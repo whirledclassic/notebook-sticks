@@ -17,6 +17,7 @@ function drawKind(g,pl){
   else if(k==="crumple"){g.beginPath();g.moveTo(x-40,y);g.lineTo(x-18,y-36);g.lineTo(x+22,y-28);g.lineTo(x+48,y+8);g.lineTo(x+10,y+36);g.lineTo(x-30,y+22);g.closePath();g.stroke();}
   else if(k==="grid"){for(let r=0;r<2;r++)for(let c=0;c<3;c++)g.strokeRect(x-90+c*62,y-50+r*52,54,44);}
   else if(k==="list"){for(let i=0;i<5;i++){g.beginPath();g.moveTo(x-50,y-30+i*16);g.lineTo(x+50,y-30+i*16);g.stroke();}}
+  else if(k==="counter"){g.strokeRect(x-110,y-30,220,50);g.beginPath();g.moveTo(x-90,y-30);g.lineTo(x-90,y+40);g.moveTo(x+90,y-30);g.lineTo(x+90,y+40);g.stroke();g.fillText("INK",x,y-40);}
   else if(k==="scribble"){g.beginPath();g.moveTo(x-60,y);g.bezierCurveTo(x-20,y-50,x+20,y+50,x+60,y);g.bezierCurveTo(x+20,y-40,x-20,y+40,x-60,y);g.stroke();}
   else {g.beginPath();g.ellipse(x,y,pl.r*0.5,pl.r*0.28,-0.08,0,Math.PI*2);g.stroke();}
   label(g,pl);
@@ -24,7 +25,7 @@ function drawKind(g,pl){
 function bakePaper(){
   const off=document.createElement("canvas");off.width=state.world.w;off.height=state.world.h;const g=off.getContext("2d");
   const page=state.me.page;
-  const paper=page==="graph"?"#eef3e6":page==="comic"?"#f7f1dc":page==="pocket"?"#edd9a6":page==="back"?"#ead9b8":"#f4eed8";
+  const paper=page==="graph"?"#eef3e6":page==="comic"?"#f7f1dc":page==="pocket"?"#edd9a6":page==="back"?"#ead9b8":page==="shop"?"#f3e6c8":"#f4eed8";
   g.fillStyle=paper;g.fillRect(0,0,off.width,off.height);
   if(page==="graph"){
     g.strokeStyle="#c5d4b8";g.lineWidth=1;
@@ -33,6 +34,9 @@ function bakePaper(){
     g.strokeStyle="#7f9a78";g.lineWidth=1.6;g.beginPath();g.moveTo(80,off.height/2);g.lineTo(off.width,off.height/2);g.moveTo(off.width/2,0);g.lineTo(off.width/2,off.height);g.stroke();
   } else if(page==="comic"){
     g.fillStyle="#111";g.fillRect(0,0,off.width,18);g.fillRect(0,off.height-18,off.width,18);
+  } else if(page==="shop"){
+    g.fillStyle="#f6d56b";g.fillRect(0,0,off.width,90);
+    g.fillStyle="#1b1b1b";g.font="28px Comic Sans MS, cursive";g.fillText("INK SHOP — hats, colors, extras",140,58);
   } else if(page==="pocket"){
     g.fillStyle="#d7b36a";g.fillRect(0,0,120,off.height);g.strokeStyle="#b0893a";g.lineWidth=3;g.beginPath();g.moveTo(120,0);g.lineTo(120,off.height);g.stroke();
   } else {
