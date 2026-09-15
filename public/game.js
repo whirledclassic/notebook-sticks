@@ -30,11 +30,12 @@ function connect(join){
     if(msg.type==="chat"){const target=msg.id===state.id?state.me:state.others.get(msg.id);if(target){target.chat=msg.text;target.chatUntil=msg.until;}logLine((msg.shout?"[page] ":"")+msg.name+": "+msg.text);}
     if(msg.type==="whisper")logLine("[whisper "+msg.from+" → "+msg.to+"] "+msg.text);
     if(msg.type==="mark"){state.marks.push(msg.mark);logLine(msg.mark.name+" left a note.");}
+    if(msg.type==="snap"&&window.ScribbleEngine)ScribbleEngine.applySnap(state.others,state.id,msg);
   };
 }
 if(typeof bakePaper!=="function"){window.bakePaper=function(){const c=document.createElement("canvas");c.width=state.world.w;c.height=state.world.h;const g=c.getContext("2d");g.fillStyle="#f4eed8";g.fillRect(0,0,c.width,c.height);state.paper=c;}}
 function applyWorld(msg){if(msg.world)state.world=msg.world;if(msg.pages)state.pages=msg.pages;if(msg.range)state.range=msg.range;state.places=msg.places||[];state.marks=msg.marks||[];}
-function remote(p){return {...p,tx:p.x,ty:p.y};}
+function remote(p){return {...p,tx:p.x,ty:p.y,fromX:p.x,fromY:p.y,toX:p.x,toY:p.y,fromT:0,toT:0};}
 function loadCrowd(list){state.others.clear();for(const p of list||[])if(p.id!==state.id)state.others.set(p.id,remote(p));}
 function logLine(text){const row=document.createElement("div");row.textContent=text;chatLog.prepend(row);while(chatLog.childElementCount>50)chatLog.lastChild.remove();}
 function pageName(id){return (state.pages.find(p=>p.id===id)||{name:id}).name;}
@@ -71,7 +72,10 @@ function tick(now){const dt=Math.min(.05,(now-last)/1000);last=now;const v=input
       state.goal=null;
     } else { v.x=gx/gm; v.y=gy/gm; }
   }
-  if(v.x||v.y){if(state.me.pose==="sit"||state.me.pose==="sleep")state.me.pose="stand";state.me.walking=state.me.pose!=="dance";if(v.x)state.me.facing=v.x<0?-1:1;state.me.x=clamp(state.me.x+v.x*SPEED*dt,70,state.world.w-48);state.me.y=clamp(state.me.y+v.y*SPEED*dt,90,state.world.h-24);}else if(state.me.pose!=="dance")state.me.walking=false;for(const p of state.others.values()){p.x+=(p.tx-p.x)*Math.min(1,dt*12);p.y+=(p.ty-p.y)*Math.min(1,dt*12);}state.cam.x+=(clamp(state.me.x-innerWidth/2,0,Math.max(0,state.world.w-innerWidth))-state.cam.x)*Math.min(1,dt*8);state.cam.y+=(clamp(state.me.y-innerHeight/2,0,Math.max(0,state.world.h-innerHeight))-state.cam.y)*Math.min(1,dt*8);if(now-state.lastSend>40){state.lastSend=now;net({type:"move",x:state.me.x,y:state.me.y,facing:state.me.facing,walking:state.me.walking});}state.marks=state.marks.filter(m=>m.until>Date.now());if(now%12<2)refreshWho();draw(now);drawMini();requestAnimationFrame(tick);}
+  if(v.x||v.y){if(state.me.pose==="sit"||state.me.pose==="sleep")state.me.pose="stand";state.me.walking=state.me.pose!=="dance";if(v.x)state.me.facing=v.x<0?-1:1;state.me.x=clamp(state.me.x+v.x*SPEED*dt,70,state.world.w-48);state.me.y=clamp(state.me.y+v.y*SPEED*dt,90,state.world.h-24);}else if(state.me.pose!=="dance")state.me.walking=false;
+  if(window.ScribbleEngine)ScribbleEngine.sample(state.others,now);
+  else {for(const p of state.others.values()){p.x+=(p.tx-p.x)*Math.min(1,dt*12);p.y+=(p.ty-p.y)*Math.min(1,dt*12);}}
+  state.cam.x+=(clamp(state.me.x-innerWidth/2,0,Math.max(0,state.world.w-innerWidth))-state.cam.x)*Math.min(1,dt*8);state.cam.y+=(clamp(state.me.y-innerHeight/2,0,Math.max(0,state.world.h-innerHeight))-state.cam.y)*Math.min(1,dt*8);if(now-state.lastSend>50){state.lastSend=now;net({type:"move",x:state.me.x,y:state.me.y,facing:state.me.facing,walking:state.me.walking});}state.marks=state.marks.filter(m=>m.until>Date.now());if(now%12<2)refreshWho();draw(now);drawMini();requestAnimationFrame(tick);}
 function draw(now){const scale=devicePixelRatio;ctx.setTransform(scale,0,0,scale,0,0);ctx.fillStyle="#f4eed8";ctx.fillRect(0,0,innerWidth,innerHeight);ctx.save();ctx.translate(-state.cam.x,-state.cam.y);if(state.paper)ctx.drawImage(state.paper,0,0);for(const m of state.marks){ctx.font="13px Comic Sans MS, cursive";ctx.fillStyle=m.color||"#1b1b1b";ctx.textAlign="center";ctx.fillText("✎ "+m.text,m.x,m.y);}ctx.strokeStyle="rgba(43,108,176,.16)";ctx.beginPath();ctx.arc(state.me.x,state.me.y,state.range,0,Math.PI*2);ctx.stroke();for(const p of everyone().sort((a,b)=>a.y-b.y))drawStick(ctx,p,now,1);ctx.restore();drawStickPad();}
 function drawStick(g,p,now,scale){
   const t=now/1000;
