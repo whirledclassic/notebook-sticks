@@ -11,7 +11,7 @@
     <div class="sheet">
       <p class="kicker">a shared sketchbook</p>
       <h1>Notebook Sticks</h1>
-      <p class="sub">Walk. Talk. Earn ink. Buy a look at the shop page.</p>
+      <p class="sub">Walk places for stamps. Talk for ink. F throws a paper airplane.</p>
       <canvas id="preview" width="180" height="160"></canvas>
       <label for="name">Name</label>
       <input id="name" type="text" maxlength="16" placeholder="Doodle" autofocus/>
@@ -24,7 +24,7 @@
   </div>
   <canvas id="game"></canvas>
   <div id="hud">
-    <div id="hint">Socialize nearby. Flip to Ink shop to spend. Click names to whisper.</div>
+    <div id="hint">Visit scribbles for stamps. F = paper airplane. Shop spends ink.</div>
     <div id="who"></div>
     <div id="ink">0 ink</div>
     <div id="here">Walk the page.</div>
@@ -39,7 +39,7 @@
       <button id="pose-wave" type="button">Wave</button>
       <button id="pose-sit" type="button">Sit</button>
       <button id="pose-dance" type="button">Dance</button>
-      <input id="chat" maxlength="140" placeholder="say hi · !page · /w Name · /mark"/>
+      <input id="chat" maxlength="140" placeholder="say hi · !page · /w Name · F plane"/>
     </div>
     <div id="look">
       <b>Change doodle</b>
@@ -51,6 +51,7 @@
   <script src="/world.js"></script>
   <script src="/engine.js"></script>
   <script src="/shop.js"></script>
+  <script src="/fun.js"></script>
   <script src="/game.js"></script>
 </body>
 </html>
