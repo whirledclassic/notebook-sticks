@@ -10,7 +10,7 @@
   <div id="boot">
     <div class="sheet">
       <h1>Notebook Sticks</h1>
-      <p class="sub">A shared page. Walk. Sit. Wave. Talk.</p>
+      <p class="sub">A tiny social MMO on lined paper. Pages, whispers, notes.</p>
       <canvas id="preview" width="180" height="160"></canvas>
       <label for="name">Name</label>
       <input id="name" type="text" maxlength="16" placeholder="Doodle" autofocus/>
@@ -23,14 +23,18 @@
   </div>
   <canvas id="game"></canvas>
   <div id="hud">
-    <div id="hint">WASD walk · E wave · C sit · L look · Enter chat</div>
+    <div id="hint">Talk nearby. !shout the page. /w Name hi. /mark note.</div>
     <div id="who"></div>
+    <div id="pages"></div>
+    <canvas id="mini" width="160" height="104"></canvas>
+    <div id="roster"></div>
     <div id="chatlog"></div>
     <div class="bar">
       <button id="look-toggle" type="button">Look</button>
       <button id="pose-wave" type="button">Wave</button>
       <button id="pose-sit" type="button">Sit</button>
-      <input id="chat" maxlength="140" placeholder="scribble something…"/>
+      <button id="pose-dance" type="button">Dance</button>
+      <input id="chat" maxlength="140" placeholder="say it · !page · /w Name · /mark"/>
     </div>
     <div id="look">
       <b>Change doodle</b>
