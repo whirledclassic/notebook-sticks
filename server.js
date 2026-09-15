@@ -97,7 +97,7 @@ wss.on("connection", (ws) => {
   if (players.size >= MAX_PLAYERS) { send(ws, { type: "full" }); ws.close(); return; }
   const id = String(nextId++);
   const pos = spawn();
-  const player = { id, ws, name: "Doodle", color: "#1b1b1b", hat: "none", page: "cover", x: pos.x, y: pos.y, facing: 1, walking: false, pose: "stand", chat: "", chatUntil: 0, lastChat: 0, lastMark: 0, joined: false };
+  const player = { id, ws, name: "Doodle", color: "#1b1b1b", hat: "none", page: "cover", x: pos.x, y: pos.y, facing: 1, walking: false, pose: "stand", chat: "", chatUntil: 0, lastChat: 0, lastMark: 0, lastMove: 0, joined: false };
   ws.on("message", (buf) => {
     let msg; try { msg = JSON.parse(String(buf)); } catch { return; }
     if (!msg || typeof msg !== "object") return;
@@ -117,12 +117,22 @@ wss.on("connection", (ws) => {
     if (msg.type === "move") {
       const x = Number(msg.x), y = Number(msg.y);
       if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-      player.x = Math.max(70, Math.min(WORLD.w - 48, x));
-      player.y = Math.max(90, Math.min(WORLD.h - 24, y));
+      const now = Date.now();
+      const dt = Math.max(16, Math.min(250, now - (player.lastMove || now)));
+      player.lastMove = now;
+      const maxStep = 280 * (dt / 1000) + 24;
+      let nx = Math.max(70, Math.min(WORLD.w - 48, x));
+      let ny = Math.max(90, Math.min(WORLD.h - 24, y));
+      const step = Math.hypot(nx - player.x, ny - player.y);
+      if (step > maxStep) {
+        const k = maxStep / step;
+        nx = player.x + (nx - player.x) * k;
+        ny = player.y + (ny - player.y) * k;
+      }
+      player.x = nx; player.y = ny;
       player.facing = msg.facing === -1 ? -1 : 1;
       player.walking = Boolean(msg.walking);
       if (player.walking && player.pose !== "dance") player.pose = "stand";
-      toPage(player.page, { type: "move", id, x: player.x, y: player.y, facing: player.facing, walking: player.walking, pose: player.pose }, player);
       return;
     }
     if (msg.type === "page") {
@@ -191,4 +201,12 @@ wss.on("connection", (ws) => {
     if (players.has(id)) { const page = player.page; players.delete(id); toPage(page, { type: "leave", id }); }
   });
 });
+setInterval(() => {
+  const tnow = Date.now();
+  for (const page of PAGES) {
+    const list = onPage(page.id);
+    if (!list.length) continue;
+    toPage(page.id, { type: "snap", t: tnow, players: list.map((p) => ({ id: p.id, x: Math.round(p.x), y: Math.round(p.y), facing: p.facing, walking: p.walking, pose: p.pose })) });
+  }
+}, 50);
 server.listen(PORT, HOST, () => console.log("Notebook Sticks http://" + HOST + ":" + PORT + "  (health /health)"));
