@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>Notebook Sticks</title>
   <link rel="stylesheet" href="/style.css"/>
 </head>
@@ -10,7 +10,8 @@
   <div id="boot">
     <div class="sheet">
       <h1>Notebook Sticks</h1>
-      <p class="sub">You are a doodle. Walk the page. Talk to the other doodles.</p>
+      <p class="sub">A shared page. Walk. Sit. Wave. Talk.</p>
+      <canvas id="preview" width="180" height="160"></canvas>
       <label for="name">Name</label>
       <input id="name" type="text" maxlength="16" placeholder="Doodle" autofocus/>
       <label>Ink</label>
@@ -22,11 +23,19 @@
   </div>
   <canvas id="game"></canvas>
   <div id="hud">
-    <div id="hint">WASD / arrows to walk · Enter to chat</div>
+    <div id="hint">WASD walk · E wave · C sit · L look · Enter chat</div>
     <div id="who"></div>
     <div id="chatlog"></div>
     <div class="bar">
+      <button id="look-toggle" type="button">Look</button>
+      <button id="pose-wave" type="button">Wave</button>
+      <button id="pose-sit" type="button">Sit</button>
       <input id="chat" maxlength="140" placeholder="scribble something…"/>
+    </div>
+    <div id="look">
+      <b>Change doodle</b>
+      <div class="row" id="look-colors"></div>
+      <div class="row" id="look-hats"></div>
     </div>
   </div>
   <script src="/game.js"></script>

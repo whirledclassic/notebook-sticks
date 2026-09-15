@@ -1,6 +1,6 @@
 # Notebook Sticks
 
-A tiny multiplayer game. You are a stick figure on lined paper. Customize your doodle, walk around the notebook, and chat with whoever else opened the same page.
+A shared sheet of paper. Everyone is a stick figure. You walk around, sit, wave, change your doodle, and talk.
 
 ## Play
 
@@ -9,22 +9,17 @@ npm install
 npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in two browser tabs.
+Open http://localhost:3000 in two tabs or two phones on the same Wi-Fi.
 
-- **Move:** WASD or arrow keys
-- **Chat:** Enter, type, Enter
-- **Look:** pick ink color and a hat on the title page
+| Input | What |
+| --- | --- |
+| WASD / arrows | Walk |
+| Touch left side | Virtual stick |
+| Enter | Chat |
+| E | Wave |
+| C | Sit |
+| L | Change ink / hat |
 
-## What it is
+Vanilla canvas + one Node WebSocket server. Other players are interpolated. The notebook is cached on an offscreen canvas.
 
-One shared notebook. No combat. No inventory. Just people standing on homework paper talking.
-
-Hats: none, cap, bow, antenna, halo, horns.
-
-## Deploy
-
-Any host that can run Node 18+ and keep a WebSocket open. Set `PORT` if the host needs it.
-
-```bash
-PORT=8080 npm start
-```
+Hats: none, cap, bow, antenna, halo, horns, flower, crown. Cap 40 people.
