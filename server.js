@@ -6,7 +6,7 @@ const path = require("path");
 const { WebSocketServer } = require("ws");
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC = path.join(__dirname, "public");
-const WORLD = { w: 2800, h: 1800 };
+const WORLD = { w: 3000, h: 2000 };
 const MAX_PLAYERS = 48;
 const MAX_CHAT = 140;
 const MAX_MARKS = 36;
@@ -14,15 +14,43 @@ const RANGE = 420;
 const HATS = new Set(["none","cap","bow","antenna","halo","horns","flower","crown"]);
 const COLORS = new Set(["#1b1b1b","#c23b22","#2b6cb0","#2f855a","#6b46c1","#b7791f","#dd6b20","#0f766e"]);
 const POSES = new Set(["stand","sit","wave","dance","sleep"]);
-const PAGES = [{ id: "cover", name: "Cover" }, { id: "margin", name: "Margin notes" }, { id: "back", name: "Back page" }];
+const PAGES = [
+  { id: "cover", name: "Cover" },
+  { id: "graph", name: "Graph paper" },
+  { id: "margin", name: "Margin notes" },
+  { id: "back", name: "Back page" }
+];
+const PLACES = {
+  cover: [
+    { id: "title", name: "Title block", x: 380, y: 280, r: 140, hint: "This is the front." },
+    { id: "coffee", name: "Coffee ring plaza", x: 720, y: 820, r: 160, hint: "Sit in the stain." },
+    { id: "quiet", name: "Quiet corner", x: 1220, y: 240, r: 150, hint: "Whisper distance." },
+    { id: "math", name: "Abandoned equation", x: 1980, y: 320, r: 150, hint: "Do not step on x." }
+  ],
+  graph: [
+    { id: "origin", name: "The origin", x: 520, y: 980, r: 140, hint: "(0, 0) more or less." },
+    { id: "triangles", name: "Triangle village", x: 1500, y: 420, r: 170, hint: "Geometry lives here." },
+    { id: "pi", name: "Pi fountain", x: 2100, y: 1100, r: 150, hint: "It never ends." }
+  ],
+  margin: [
+    { id: "sidenote", name: "Side notes cafe", x: 420, y: 320, r: 150, hint: "Teachers never look here." },
+    { id: "pencil", name: "Lost pencil", x: 1040, y: 1180, r: 140, hint: "Someone is still looking." },
+    { id: "tree", name: "Scribble tree", x: 1760, y: 560, r: 160, hint: "A tree made of loops." }
+  ],
+  back: [
+    { id: "yearbook", name: "Yearbook wall", x: 480, y: 360, r: 150, hint: "Write a note." },
+    { id: "phones", name: "Phone numbers", x: 1680, y: 300, r: 140, hint: "All fake." },
+    { id: "exam", name: "Final exam panic", x: 900, y: 1120, r: 170, hint: "Breathe. Dance. Sleep." }
+  ]
+};
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8" };
 const players = new Map();
-const marks = { cover: [], margin: [], back: [] };
+const marks = { cover: [], graph: [], margin: [], back: [] };
 let nextId = 1;
 function sanitizeName(name) { return String(name || "").replace(/[^\w \-.'!]/g, "").trim().slice(0, 16) || "Doodle"; }
 function pick(set, value, fallback) { return set.has(value) ? value : fallback; }
 function pageOk(id) { return PAGES.some((p) => p.id === id) ? id : "cover"; }
-function spawn() { return { x: 560 + Math.random() * 640, y: 460 + Math.random() * 320 }; }
+function spawn() { return { x: 560 + Math.random() * 640, y: 500 + Math.random() * 320 }; }
 function view(p) {
   return { id: p.id, name: p.name, color: p.color, hat: p.hat, page: p.page, x: p.x, y: p.y, facing: p.facing, walking: p.walking, pose: p.pose, chat: p.chat, chatUntil: p.chatUntil };
 }
@@ -36,6 +64,9 @@ function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
 function pruneMarks(page) {
   const now = Date.now();
   marks[page] = (marks[page] || []).filter((m) => m.until > now).slice(-MAX_MARKS);
+}
+function snapshot(page) {
+  return { pages: PAGES, places: PLACES[page] || [], marks: marks[page] || [], players: onPage(page).map(view), world: WORLD, range: RANGE };
 }
 const server = http.createServer((req, res) => {
   let urlPath = decodeURIComponent((req.url || "/").split("?")[0]);
@@ -65,7 +96,7 @@ wss.on("connection", (ws) => {
       player.page = pageOk(msg.page);
       players.set(id, player);
       pruneMarks(player.page);
-      send(ws, { type: "welcome", id, world: WORLD, pages: PAGES, range: RANGE, you: view(player), players: onPage(player.page).map(view), marks: marks[player.page] });
+      send(ws, { type: "welcome", id, you: view(player), ...snapshot(player.page) });
       toPage(player.page, { type: "join", player: view(player) }, player);
       return;
     }
@@ -73,7 +104,7 @@ wss.on("connection", (ws) => {
     if (msg.type === "move") {
       const x = Number(msg.x), y = Number(msg.y);
       if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-      player.x = Math.max(48, Math.min(WORLD.w - 48, x));
+      player.x = Math.max(70, Math.min(WORLD.w - 48, x));
       player.y = Math.max(90, Math.min(WORLD.h - 24, y));
       player.facing = msg.facing === -1 ? -1 : 1;
       player.walking = Boolean(msg.walking);
@@ -89,7 +120,7 @@ wss.on("connection", (ws) => {
       const pos2 = spawn();
       player.x = pos2.x; player.y = pos2.y; player.walking = false; player.pose = "stand";
       pruneMarks(next);
-      send(ws, { type: "page", page: next, you: view(player), players: onPage(next).map(view), marks: marks[next] });
+      send(ws, { type: "page", page: next, you: view(player), ...snapshot(next) });
       toPage(next, { type: "join", player: view(player) }, player);
       return;
     }
