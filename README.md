@@ -1,25 +1,21 @@
 # Notebook Sticks
 
-A tiny social MMO inside a notebook. Anyone who opens the server is in the book.
-
-## Play
+A playable social MMO inside a notebook. Anyone who opens the server is in the book.
 
 ```bash
-npm install
-npm start
+chmod +x run.sh && ./run.sh
 ```
 
-Open http://localhost:3000 — two tabs, two phones, or send the URL to a friend on the same host.
+Open http://localhost:3000 — second tab is a second player.
 
-## The book
+## Pages now
 
 | Page | Paper | Places |
 | --- | --- | --- |
-| Cover | Lined, red margin, spiral holes | Title block, coffee ring plaza, quiet corner, abandoned equation |
-| Graph paper | Grid + axes | The origin, triangle village, pi fountain |
-| Margin notes | Loose lines | Side notes cafe, lost pencil, scribble tree |
-| Back page | Warm paper, torn edge | Yearbook wall, phone numbers, final exam panic |
+| Cover | Lined, red margin, spiral | Title block, locker row, coffee ring plaza, quiet bench |
+| Graph | Green grid | Origin, triangle village, π fountain |
+| Comic | Ink frames | Three panels + splash |
+| Pocket | Manila | Paperclip park, stamp corner, crumpled courtyard |
+| Back page | Torn warm paper | Yearbook wall, phone list, exam panic |
 
-Walk into a scribble. The HUD names it. Notes and chat stay on that page.
-
-Stick figures breathe when idle, blink, and use a contact/pass walk. Title-page preview walks so you can see the cycle before you join.
+Click a destination or the page to walk there. Sit happens automatically on the bench. Chat is nearby. `!` shouts the page. `/w Name` whispers. `/mark` pins a note.
