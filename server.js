@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { WebSocketServer } = require("ws");
 const PORT = Number(process.env.PORT || 3000);
+const HOST = process.env.HOST || "0.0.0.0";
 const PUBLIC = path.join(__dirname, "public");
 const WORLD = { w: 3000, h: 2000 };
 const MAX_PLAYERS = 48;
@@ -70,6 +71,11 @@ function snapshot(page) {
 }
 const server = http.createServer((req, res) => {
   let urlPath = decodeURIComponent((req.url || "/").split("?")[0]);
+  if (urlPath === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify({ ok: true, players: players.size, pages: PAGES.map((p) => p.id) }));
+    return;
+  }
   if (urlPath === "/") urlPath = "/index.html";
   const file = path.normalize(path.join(PUBLIC, urlPath));
   if (!file.startsWith(PUBLIC)) { res.writeHead(403).end(); return; }
@@ -178,4 +184,4 @@ wss.on("connection", (ws) => {
     if (players.has(id)) { const page = player.page; players.delete(id); toPage(page, { type: "leave", id }); }
   });
 });
-server.listen(PORT, () => console.log("Notebook Sticks http://localhost:" + PORT));
+server.listen(PORT, HOST, () => console.log("Notebook Sticks http://" + HOST + ":" + PORT + "  (health /health)"));
