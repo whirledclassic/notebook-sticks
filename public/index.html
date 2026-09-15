@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Notebook Sticks</title>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body>
+  <div id="boot">
+    <div class="sheet">
+      <h1>Notebook Sticks</h1>
+      <p class="sub">You are a doodle. Walk the page. Talk to the other doodles.</p>
+      <label for="name">Name</label>
+      <input id="name" type="text" maxlength="16" placeholder="Doodle" autofocus/>
+      <label>Ink</label>
+      <div class="row" id="colors"></div>
+      <label>Hat</label>
+      <div class="row" id="hats"></div>
+      <button class="play" id="go">Open the notebook</button>
+    </div>
+  </div>
+  <canvas id="game"></canvas>
+  <div id="hud">
+    <div id="hint">WASD / arrows to walk · Enter to chat</div>
+    <div id="who"></div>
+    <div id="chatlog"></div>
+    <div class="bar">
+      <input id="chat" maxlength="140" placeholder="scribble something…"/>
+    </div>
+  </div>
+  <script src="/game.js"></script>
+</body>
+</html>

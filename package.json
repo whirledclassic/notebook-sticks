@@ -1,0 +1,15 @@
+{
+  "name": "notebook-sticks",
+  "version": "1.0.0",
+  "description": "Walk around a notebook as a stick figure and chat.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

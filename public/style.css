@@ -1,0 +1,101 @@
+:root {
+  --ink: #1b1b1b;
+  --paper: #f6f1de;
+  --line: #c8ddf0;
+  --margin: #f2b6b6;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: "Comic Sans MS", "Segoe Print", "Chalkboard SE", cursive, sans-serif;
+  background: #cbbfa6;
+  color: var(--ink);
+}
+#boot, #hud { position: fixed; inset: 0; }
+#boot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(#f6f1de, #f6f1de 31px, #c8ddf0 32px),
+    linear-gradient(90deg, transparent 72px, #f2b6b6 72px, #f2b6b6 74px, transparent 74px);
+  z-index: 5;
+}
+.sheet {
+  width: min(520px, 92vw);
+  background: rgba(246,241,222,.92);
+  border: 2px solid #1b1b1b;
+  box-shadow: 8px 10px 0 #1b1b1b;
+  padding: 22px 24px 26px;
+}
+h1 { margin: 0 0 6px; font-size: 34px; transform: rotate(-1.2deg); }
+.sub { margin: 0 0 16px; color: #444; }
+label { display: block; margin: 10px 0 4px; }
+input[type=text] {
+  width: 100%;
+  font: inherit;
+  font-size: 20px;
+  padding: 8px 10px;
+  border: 2px solid #1b1b1b;
+  background: #fffdf6;
+}
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 4px; }
+.swatch, .hat {
+  width: 36px; height: 36px;
+  border: 2px solid #1b1b1b;
+  background: #fff;
+  cursor: pointer;
+}
+.swatch.on, .hat.on { outline: 3px solid #1b1b1b; outline-offset: 2px; }
+button.play {
+  margin-top: 16px;
+  width: 100%;
+  font: inherit;
+  font-size: 22px;
+  padding: 10px;
+  border: 2px solid #1b1b1b;
+  background: #ffd56a;
+  box-shadow: 4px 4px 0 #1b1b1b;
+  cursor: pointer;
+}
+canvas { display: block; width: 100vw; height: 100vh; background: #f6f1de; }
+#hud { pointer-events: none; }
+#hud .bar {
+  pointer-events: auto;
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 8px;
+}
+#chatlog {
+  pointer-events: auto;
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  width: min(280px, 40vw);
+  max-height: 40vh;
+  overflow: auto;
+  background: rgba(246,241,222,.86);
+  border: 2px solid #1b1b1b;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+#chat {
+  pointer-events: auto;
+  min-width: min(420px, 70vw);
+  font: inherit;
+  font-size: 18px;
+  padding: 8px 10px;
+  border: 2px solid #1b1b1b;
+  background: #fffdf6;
+}
+#hint, #who {
+  position: absolute;
+  left: 16px;
+  background: rgba(246,241,222,.86);
+  border: 2px solid #1b1b1b;
+  padding: 6px 10px;
+}
+#hint { top: 12px; }
+#who { top: 52px; font-size: 14px; }
